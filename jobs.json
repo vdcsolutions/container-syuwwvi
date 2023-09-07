@@ -1,0 +1,42 @@
+[{"job" : {
+  "config": {
+    "headless": true,
+    "proxy": "filename",
+    "waitTime": 5000,
+    "browser": "your_browser_here"
+  },
+  "type": "paginate",
+  "url": "https://www.google.com/",
+  "next_page_button": "xpath to it",
+  "actions": [
+    {
+      "scrape": [
+        {
+          "xpath": "xpath to it",
+          "label": "page urls",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "job":{
+        "type": "extractor",
+        "urls_list": "page urls",
+        "actions": [
+          {
+            "scrape": [
+              {
+                "xpath": "xpath to it",
+                "label": "page urls",
+                "type": "string"
+              }
+            ]
+          }
+        ],
+        "click": {
+          "xpath": "xpath to it"
+        }
+      }
+    }
+  ]
+}}]
