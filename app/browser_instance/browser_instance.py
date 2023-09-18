@@ -100,7 +100,7 @@ class BrowserInstance:
         if self.browser_instance:
             await self.browser_instance.close()
 
-    async def get_page_html(self) -> str:
+    async def get_html(self) -> str:
         """
         Get the HTML content of the current page.
 
