@@ -6,7 +6,7 @@
     "browser": "your_browser_here"
   },
   "type": "paginate",
-  "url": "https://www.google.com/",
+  "urls": "['https://www.google.com/']",
   "next_page_button": "xpath to it",
   "actions": [
     {
@@ -21,14 +21,14 @@
     {
       "job":{
         "type": "extractor",
-        "urls_list": "page urls",
+        "nested": "True",
+        "urls": "label of scraped urls",
         "actions": [
           {
             "scrape": [
               {
                 "xpath": "xpath to it",
-                "label": "page urls",
-                "type": "string"
+                "label": "page urls"
               }
             ]
           }
