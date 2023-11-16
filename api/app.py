@@ -12,7 +12,7 @@ sys.path.insert(0, str(parent_dir))
 
 app = FastAPI()
 
-# Define the /scrape endpoint
+
 @app.post("/scrape")
 async def scrape(request_data: Request):
     try:
