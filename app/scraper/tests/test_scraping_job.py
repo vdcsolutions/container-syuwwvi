@@ -1,52 +1,27 @@
-from pathlib import Path
-import sys
-import unittest
-from unittest.mock import MagicMock
-
-# Ensure you are adding the correct parent directory to the sys.path
-current_dir = Path(__file__).resolve().parent
-sys.path.append(str(current_dir.parent))
-
+import pytest
+from unittest.mock import AsyncMock
 from app.scraper.scraping_job import ScrapingJob
+from pathlib import Path
 from schemas.request_schema import payload_data
 
+@pytest.mark.asyncio
+class TestScrapingJobPerformActions:
+    async def test_perform_actions(self):
+        """
+        Test the perform_actions method.
 
-class TestScrapingJob(unittest.TestCase):
-    def setUp(self):
-        # Set up any necessary data or mocks for testing
-        self.payload_data = payload_data
-
-    def test_init(self):
-        # Test the initialization of ScrapingJob
-        scraping_job = ScrapingJob(self.payload_data)
-        self.assertIsInstance(scraping_job, ScrapingJob)
-        # Add more assertions if needed
-
-    def test_click(self):
+        Returns:
+        - None
+        """
         # Arrange
-        scraping_job = ScrapingJob({})
-        xpath = "some_xpath"
+        scraping_job = ScrapingJob(payload_data)
+        scraping_job.perform_actions_for_url = AsyncMock()
 
         # Act
-        with unittest.mock.patch("app.scraper.scraping_job.click") as mock_click:
-            scraping_job.click(xpath)
+        await scraping_job.perform_actions()
 
         # Assert
-        mock_click.assert_called_once_with(xpath)
-
-    def test_scrape(self):
-        # Arrange
-        scraping_job = ScrapingJob({})
-        xpath = "some_xpath"
-        label = "some_label"
-
-        # Act
-        with unittest.mock.patch("app.scraper.scraping_job.scrape") as mock_scrape:
-            scraping_job.scrape(xpath, label)
-
-        # Assert
-        mock_scrape.assert_called_once_with(xpath, label)
+        scraping_job.perform_actions_for_url.assert_called_once_with("https://example.com")
 
 if __name__ == "__main__":
-    unittest.main()
-
+    pytest.main()

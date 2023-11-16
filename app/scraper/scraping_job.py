@@ -1,12 +1,13 @@
 from typing import Dict, Optional
 import asyncio
-
+from pyppeteer import launch, page
 class ScrapingJob:
     def __init__(self, data: Dict, config: Optional[Dict] = None):
         if 'payload' in data:
             self.data = data.get('payload')
         else:
             self.data = data
+        self.scraped_data = []
         self.multiple_pages = self.data.get('multiple_pages', False)
         self.nested = self.data.get('nested', False)
         self.urls = self.data.get('urls')
@@ -16,12 +17,9 @@ class ScrapingJob:
             self.next_page_button_xpath = self.data.get('next_page_button_xpath', None)
 
         if self.nested:
-            if config is not None:
-                self.config = config
-            else:
-                raise ValueError("Config is required for nested scraping.")
+            self.config = config
         else:
-            self.config = self.data.get('config', None)
+            self.config = self.data.get('config')
 
     async def initialize_browser(self):
         """
@@ -30,9 +28,9 @@ class ScrapingJob:
         Returns:
         - None
         """
-        if not hasattr(self, 'browser') or self.browser is None:
-            browser_options = {"headless": self.config.get("headless", True)}
-            self.browser = await launch(options=browser_options)
+        browser_options = {"headless": self.config.get("headless", True)}
+        browser = await launch(options=browser_options)
+        return browser
 
     async def perform_actions(self):
         """
@@ -41,7 +39,6 @@ class ScrapingJob:
         Returns:
         - None
         """
-        await self.initialize_browser()
 
         # Iterate over each URL and perform actions asynchronously
         tasks = [self.perform_actions_for_url(url) for url in self.urls]
@@ -58,7 +55,8 @@ class ScrapingJob:
         - None
         """
         # Your logic to set up the page for the given URL
-        page = await self.browser.newPage()
+        browser = await self.initialize_browser()
+        page = await browser.newPage()
         await page.goto(url)
 
         # Perform actions for the given URL
@@ -67,24 +65,34 @@ class ScrapingJob:
                 nested_job = ScrapingJob(action, config=self.config)
                 await nested_job.perform_actions()
             elif action['type'] == 'click':
-                await self.click(page, action['xpath'])
+                await page.click(action['xpath'])
             elif action['type'] == 'scrape':
                 await self.scrape(page, action['xpath'], action['label'])
 
         # Close the page after performing actions
         await page.close()
 
-    async def click(self, xpath: str):
-        # Implement your logic to simulate a click action
-        page = await self.browser.newPage()
-        await page.goto(self.config.get("browser", "about:blank"))
-        await page.click(xpath)
-        await page.close()
+    async def scrape(self, page: page.Page, xpath: str, label: str):
+        """
+        Perform scraping based on the provided XPath on the provided page.
 
-    async def scrape(self, xpath: str, label: str):
-        # Implement your logic to perform scraping based on the provided XPath
-        # Use the 'label' to identify or label the scraped payload
-        page = await self.browser.newPage()
-        await page.goto(self.config.get("browser", "about:blank"))
-        # Perform scraping logic
-        await page.close()
+        Parameters:
+        - page (page.Page): The Puppeteer page to perform the scrape action on.
+        - xpath (str): The XPath to the element to scrape.
+        - label (str): A label for the scraped payload.
+
+        Returns:
+        - None
+        """
+        # Find all elements matching the XPath
+        elements = await page.xpath(xpath)
+
+        # Get content from all occurrences
+        scraped_data = []
+        for element in elements:
+            content = await element.evaluate('(node) => node.textContent')
+            scraped_data.append(content)
+
+        # Write results to self.scraped_data with label as the key
+        self.scraped_data = scraped_data
+

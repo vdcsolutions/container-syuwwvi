@@ -1,5 +1,11 @@
+from pathlib import Path
+import sys
 import os
-from app.io_operations import IOOperations
+# Ensure you are adding the correct parent directory to the sys.path
+current_dir = Path(__file__).resolve().parent
+sys.path.append(str(current_dir.parent))
+
+from app.database.io_operations import IOOperations
 # Define the path for a temporary file used in tests
 TEMP_FILE_PATH = 'temp_test_file.json'
 
