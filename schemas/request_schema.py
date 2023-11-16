@@ -1,8 +1,9 @@
-from typing import List, Optional, Literal
+from typing import List, Optional, Union, Literal
 from pydantic import BaseModel, PositiveInt
 
 
 class Config(BaseModel):
+    # Configuration model for job parameters
     headless: bool
     proxy: str
     waitTime: int
@@ -10,35 +11,38 @@ class Config(BaseModel):
 
 
 class Action(BaseModel):
-    type: Literal['scrape', 'click', 'extractor', 'paginator']
+    # Base action model with a union of possible action types
+    type: Union[Literal['scrape'], Literal['click'], Literal['job']]
 
 
 class Job(Action):
-    config: Optional[Config] = None
-    type: Literal['paginator', 'extractor']
-    urls: List
-    next_page_button_xpath: Optional[str]
+    # Model representing a job action
+    config: Config
+    multiple_pages: Optional[bool] = False
+    next_page_button_xpath: Optional[str] = None
+    urls: List[str]
     actions: List[Action]
-    nested: Optional[bool] = False
-
+    nested: bool = False
 
 class NestedJob(Job):
-    urls: str
-
+    # Model representing a nested job action
+    nested: bool = True
 
 class Scrape(Action):
+    # Model representing a scrape action
+    type: Literal['scrape']
     label: str
     xpath: str
 
 
-List[Job]
-
-
 class Click(Action):
+    # Model representing a click action
+    type: Literal['click']
     xpath: str
 
 
 class Request(BaseModel):
+    # Model representing the overall request payload
     payload: Job
 
 
@@ -49,31 +53,30 @@ payload_data = {"payload": {
         "waitTime": 5000,
         "browser": "your_browser_here"
     },
-    "type": "paginator",
+    "type": 'job',
     "urls": ['https://www.google.com/'],
+    "multiple_pages": True,
     "next_page_button_xpath": "xpath to it",
     "actions": [
         {
             "type": "scrape",
             "xpath": "xpath to it",
             "label": "page urls",
-
         },
         {
-            "type": "extractor",
-            "nested": "True",
-            "urls": "label of scraped urls",
+            "type": "job",
+            "nested": True,
+            "urls": "xpath to urls",
             "actions": [
                 {
                     "type": "scrape",
                     "xpath": "xpath to it",
                     "label": "page urls"
+                },
+                {
+                    "type": "click",
+                    "xpath": "xpath to it"
                 }
-
-                ,
-                {"type": "click",
-                 "xpath": "xpath to it"
-                 }
             ]
         }
     ]
