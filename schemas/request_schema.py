@@ -1,5 +1,7 @@
 from typing import List, Optional, Union, Literal
-from pydantic import BaseModel, PositiveInt
+from pydantic import BaseModel
+import json
+
 
 
 class Config(BaseModel):
@@ -17,6 +19,7 @@ class Action(BaseModel):
 
 class Job(Action):
     # Model representing a job action
+    type: Literal['job']
     config: Config
     multiple_pages: Optional[bool] = False
     next_page_button_xpath: Optional[str] = None
@@ -45,42 +48,7 @@ class Request(BaseModel):
     # Model representing the overall request payload
     payload: Job
 
-
-payload_data = {"payload": {
-    "config": {
-        "headless": True,
-        "proxy": "filename",
-        "waitTime": 5000,
-        "browser": "your_browser_here"
-    },
-    "type": 'job',
-    "urls": ['https://www.google.com/'],
-    "multiple_pages": True,
-    "next_page_button_xpath": "xpath to it",
-    "actions": [
-        {
-            "type": "scrape",
-            "xpath": "xpath to it",
-            "label": "page urls",
-        },
-        {
-            "type": "job",
-            "nested": True,
-            "urls": "xpath to urls",
-            "actions": [
-                {
-                    "type": "scrape",
-                    "xpath": "xpath to it",
-                    "label": "page urls"
-                },
-                {
-                    "type": "click",
-                    "xpath": "xpath to it"
-                }
-            ]
-        }
-    ]
-}
-}
+with open('schemas/request.json', 'r') as file:
+    payload_data = json.load(file)
 
 request = Request(**payload_data)

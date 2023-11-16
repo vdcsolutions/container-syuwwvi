@@ -65,22 +65,22 @@ class Scraper:
 
 
     def perform_actions(self, actions: List[Dict[str, Any]], page: Page) -> None:
-    """
-    Iterate through actions and execute the corresponding function.
+        """
+        Iterate through actions and execute the corresponding function.
 
-    :param actions: List of actions to perform
-    :param page: The Pyppeteer page object
-    """
-    for action in actions:
-        if "job" in action:
-            # Create a new instance of scraping_service for the nested job
-            scraper = Scraper(action["job"], parent_config=self.config)
-            # Continue with your logic for handling nested jobs
-        elif "scrape" in action:
-            self.scrape_data(action["scrape"], page)
-        elif "click" in action:
-            self.click_element(action["click"]["xpath"], page)  # Adjust to fit the correct structure of your "click" action
-        # Handle other action types as needed
+        :param actions: List of actions to perform
+        :param page: The Pyppeteer page object
+        """
+        for action in actions:
+            if "job" in action:
+                # Create a new instance of scraping_service for the nested job
+                scraper = Scraper(action["job"], parent_config=self.config)
+                # Continue with your logic for handling nested jobs
+            elif "scrape" in action:
+                self.scrape_data(action["scrape"], page)
+            elif "click" in action:
+                self.click_element(action["click"]["xpath"], page)  # Adjust to fit the correct structure of your "click" action
+            # Handle other action types as needed
 
 class Parser:
     def parse_data(self, data: Any, data_type: str) -> Any:

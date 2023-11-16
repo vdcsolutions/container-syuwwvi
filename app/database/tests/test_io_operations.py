@@ -12,7 +12,7 @@ def teardown_function():
     """ Teardown function to remove the temporary JSON file after each test """
     if os.path.exists(TEMP_FILE_PATH):
         os.remove(TEMP_FILE_PATH)
-pdef test_read_json():
+def test_read_json():
     """ Test the read_json method with a valid JSON file """
     data = IOOperations.read_json(TEMP_FILE_PATH)
     assert data == {"key": "value"}
