@@ -1,26 +1,20 @@
+from typing import Dict, Optional
+import asyncio
+
 class ScrapingJob:
     def __init__(self, data: Dict, config: Optional[Dict] = None):
-        """
-        Initialize ScrapingJob instance.
-
-        Parameters:
-        - data (Dict): The data dictionary containing information for scraping.
-        - config (Optional[Dict]): Optional configuration dictionary. Use only if nested.
-
-        Returns:
-        - None
-        """
-        self.data = data['payload']  # Data dictionary
-        self.multiple_pages = self.data.get('multiple_pages', False)  # Default to False if not present
-        self.nested = self.data.get('nested', False)  # Default to False if not present
+        if 'payload' in data:
+            self.data = data.get('payload')
+        else:
+            self.data = data
+        self.multiple_pages = self.data.get('multiple_pages', False)
+        self.nested = self.data.get('nested', False)
         self.urls = self.data.get('urls')
         self.actions = self.data.get('actions')
 
-        # Check if multiple pages and next_page_button_xpath are present in data
         if self.multiple_pages:
             self.next_page_button_xpath = self.data.get('next_page_button_xpath', None)
 
-        # Check if nested and config are present in data
         if self.nested:
             if config is not None:
                 self.config = config
@@ -29,49 +23,68 @@ class ScrapingJob:
         else:
             self.config = self.data.get('config', None)
 
-    def perform_actions(self):
+    async def initialize_browser(self):
         """
-        Perform scraping actions based on the configuration.
+        Initialize a Puppeteer browser based on the provided configuration.
 
         Returns:
         - None
         """
+        if not hasattr(self, 'browser') or self.browser is None:
+            browser_options = {"headless": self.config.get("headless", True)}
+            self.browser = await launch(options=browser_options)
+
+    async def perform_actions(self):
+        """
+        Perform scraping actions based on the configuration for each URL.
+
+        Returns:
+        - None
+        """
+        await self.initialize_browser()
+
+        # Iterate over each URL and perform actions asynchronously
+        tasks = [self.perform_actions_for_url(url) for url in self.urls]
+        await asyncio.gather(*tasks)
+
+    async def perform_actions_for_url(self, url: str):
+        """
+        Perform scraping actions for a specific URL.
+
+        Parameters:
+        - url (str): The URL to perform actions on.
+
+        Returns:
+        - None
+        """
+        # Your logic to set up the page for the given URL
+        page = await self.browser.newPage()
+        await page.goto(url)
+
+        # Perform actions for the given URL
         for action in self.actions:
             if action['type'] == 'job':
-                # Create a new ScrapingJob instance with the nested configuration
                 nested_job = ScrapingJob(action, config=self.config)
-                nested_job.perform_actions()  # Perform actions for the nested job
+                await nested_job.perform_actions()
             elif action['type'] == 'click':
-                self.click(action['xpath'])
+                await self.click(page, action['xpath'])
             elif action['type'] == 'scrape':
-                self.scrape(action['xpath'], action['label'])
+                await self.scrape(page, action['xpath'], action['label'])
 
-    def click(self, xpath: str):
-        """
-        Simulate a click action.
+        # Close the page after performing actions
+        await page.close()
 
-        Parameters:
-        - xpath (str): The XPath to the element to click.
-
-        Returns:
-        - None
-        """
+    async def click(self, xpath: str):
         # Implement your logic to simulate a click action
+        page = await self.browser.newPage()
+        await page.goto(self.config.get("browser", "about:blank"))
+        await page.click(xpath)
+        await page.close()
 
-    def scrape(self, xpath: str, label: str):
-        """
-        Perform scraping based on the provided XPath.
-
-        Parameters:
-        - xpath (str): The XPath to the element to scrape.
-        - label (str): A label for the scraped data.
-
-        Returns:
-        - None
-        """
+    async def scrape(self, xpath: str, label: str):
         # Implement your logic to perform scraping based on the provided XPath
-        # Use the 'label' to identify or label the scraped data
-
-# Instantiate the ScrapingJob
-scraper = ScrapingJob(payload_data)
-scraper.perform_actions()  # Perform actions based on the configured data
+        # Use the 'label' to identify or label the scraped payload
+        page = await self.browser.newPage()
+        await page.goto(self.config.get("browser", "about:blank"))
+        # Perform scraping logic
+        await page.close()
