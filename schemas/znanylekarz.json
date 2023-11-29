@@ -17,7 +17,7 @@
         {
             "type": "scrape",
             "xpath": "//div[@class='media-body']//a[@data-id='address-context-cta']",
-            "label": "url"
+            "label": "name"
         }
             ]
         }

@@ -38,11 +38,18 @@ class ScrapingJob:
         """
 
 
-        # Iterate over each URL and perform actions asynchronously
-        tasks = [self.scraping_task(url) for url in self.urls]
+        semaphore = asyncio.Semaphore(5)
+
+        async def limited_task(url):
+            async with semaphore:
+                print(url)
+                await self.scraping_task(url)
+
+        # Iterate over each URL and perform actions asynchronously with a limit of 5 concurrent tasks
+        tasks = [limited_task(url) for url in self.urls]
         await asyncio.gather(*tasks)
 
-    async def perform_actions(self, driver, page: int = 0):
+    async def perform_actions(self, driver, url, page: int = 0):
         """
         Perform scraping actions based on the specified WebDriver instance and page number.
 
@@ -64,7 +71,7 @@ class ScrapingJob:
                 except:
                     pass
             elif action.type == 'scrape':
-                await self.scrape(driver, action.xpath, action.label)
+                await self.scrape(driver, url, action.xpath, action.label)
 
     async def scraping_task(self, url: str):
         """
@@ -77,18 +84,18 @@ class ScrapingJob:
         - None
         """
         options = webdriver.ChromeOptions()
-        print(self.config.headless)
         if self.config.headless:
             options.add_argument("--headless")
             options.add_argument("--disable-gpu")
         driver = webdriver.Chrome(options=options)
         driver.get(url)
+        self.scraped_data.append({'url': url, 'title': driver.title, 'data': []})
         await asyncio.sleep(self.config.waitTime)
 
         try:
             if self.multiple_pages and self.next_page_button_xpath:
                 page = 1
-                await self.perform_actions(driver, page)
+                await self.perform_actions(driver, url, page)
                 next_page_button = driver.find_element(By.XPATH, self.next_page_button_xpath)
                 while next_page_button:
                     try:
@@ -96,25 +103,23 @@ class ScrapingJob:
                         next_page_button.click()
                         page += 1
                         await asyncio.sleep(self.config.waitTime)
-                        await self.perform_actions(driver, page)
+                        await self.perform_actions(driver, url, page)
                     except Exception as e:
                         print(str(e))
                         next_page_button = None
             else:
-                await self.perform_actions(driver)
-
+                await self.perform_actions(driver, url)
 
         finally:
-            with open('output.json', 'w') as json_file:
-                json.dump(self.scraped_data, json_file, indent=2)
             driver.quit()
 
-    async def scrape(self, driver, xpath: str, label: str):
+    async def scrape(self, driver, url: str, xpath: str, label: str):
         """
         Perform scraping based on the provided XPath on the provided page.
 
         Parameters:
-        - page (page.Page): The Puppeteer page to perform the scrape action on.
+        - driver: The WebDriver instance.
+        - url (str): The URL of the page being scraped.
         - xpath (str): The XPath to the element to scrape.
         - label (str): A label for the scraped payload.
 
@@ -124,14 +129,20 @@ class ScrapingJob:
         elements = driver.find_elements(By.XPATH, xpath)
         data = []
         for element in elements:
-            print(element.text)
             try:
                 href_value = element.get_attribute("href")
-                data.append({label: element.text, 'href': href_value})
+                if href_value:
+                    data.append({label: element.text, 'href': href_value})
+                elif element.text:
+                    data.append({label: element.text})
+
             except:
                 data.append({label: element.text})
                 pass
-        print(data)
-        # Write results to self.scraped_data with label as the key
-        self.scraped_data.extend(data)
+        # Find the entry in self.scraped_data with the corresponding URL and update its 'data' field
+        for entry in self.scraped_data:
+            if entry['url'] == url:
+                print(entry)
+                entry['data'].extend(data)
+                break
 

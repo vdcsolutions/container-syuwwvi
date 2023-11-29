@@ -16,21 +16,9 @@
             "label": "page urls"
         },
         {
-            "type": "job",
-            "nested": true,
-            "urls": ["https://nested.com"],
-            "actions": [
-                {
-                    "type": "scrape",
-                    "xpath": "xpath to it",
-                    "label": "page urls"
-                },
-                {
-                    "type": "click",
-                    "xpath": "xpath to it"
-                }
+            "type": "click",
+            "xpath": "xpath to it"}
             ]
         }
-    ]
-}
+
 }

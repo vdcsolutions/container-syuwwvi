@@ -6,9 +6,12 @@
         "browser": "your_browser_here"
     },
     "type": "job",
-    "urls": [],
-    "multiple_pages": true,
-    "next_page_button_xpath": "//a[@data-test-id='pagination-next']",
+    "urls": [
+  "https://www.znanylekarz.pl/artur-wozniak-3/stomatolog-chirurg-stomatologiczny-protetyk/zory#address-id=%5B944811%5D&filters%5Bspecializations%5D%5B%5D=103",
+  "https://www.znanylekarz.pl/pawel-urbanczyk/stomatolog/rybnik#address-id=%5B881828%5D&filters%5Bspecializations%5D%5B%5D=103",
+  "https://www.znanylekarz.pl/bartosz-slomian/stomatolog-ortodonta/zory#address-id=%5B1058819%5D&filters%5Bspecializations%5D%5B%5D=103",
+  "https://www.znanylekarz.pl/magdalena-skrzypczak-2/stomatolog-lekarz-medycyny-estetycznej-ortodonta/radlin2#address-id=%5B1021686%5D&filters%5Bspecializations%5D%5B%5D=103"],
+    "multiple_pages": false,
     "actions": [
         {
             "type": "click",

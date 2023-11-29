@@ -34,6 +34,11 @@ class Click(BaseModel):
     xpath: str
     page: Optional[int]
 
+class Action(BaseModel):
+    type: str
+    xpath: str = ""
+    label: str = ""
+    page: int = 0
 
 
 class Job(BaseModel):
@@ -41,16 +46,16 @@ class Job(BaseModel):
     config: Config
     multiple_pages: Optional[bool] = False
     next_page_button_xpath: Optional[str] = None
-    urls: Union[List[str], str]
+    urls: List[str]
     nested: bool = False
-    actions: List[Union[Scrape,Click,NestedJob]]
+    actions: List[Action]
 
 
 class Request(BaseModel):
     # Model representing the overall request payload
     payload: Job
 
-with open('schemas/request.json', 'r') as file:
+with open('schemas/znanylekarzdetails.json', 'r') as file:
     payload_data = json.load(file)
 
 request = Request(**payload_data)
