@@ -1,0 +1,24 @@
+{"payload": {
+    "config": {
+        "headless": true,
+        "proxy": "filename",
+        "waitTime": 2,
+        "browser": "your_browser_here"
+    },
+    "type": "job",
+    "urls": ["https://www.znanylekarz.pl/szukaj?q=Stomatolog&loc=Wojew%C3%B3dztwo%20%C5%9Al%C4%85skie&filters%5Bspecializations%5D%5B0%5D=103"],
+    "multiple_pages": true,
+    "next_page_button_xpath": "//a[@data-test-id='pagination-next']",
+    "actions": [
+        {
+            "type": "click",
+            "xpath": "//button[@id='onetrust-accept-btn-handler']",
+            "page": 1},
+        {
+            "type": "scrape",
+            "xpath": "//div[@class='media-body']//a[@data-id='address-context-cta']",
+            "label": "url"
+        }
+            ]
+        }
+}

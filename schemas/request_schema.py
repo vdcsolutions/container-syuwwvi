@@ -11,37 +11,39 @@ class Config(BaseModel):
     waitTime: int
     browser: str
 
-
-class Action(BaseModel):
-    # Base action model with a union of possible action types
-    type: Union[Literal['scrape'], Literal['click'], Literal['job']]
-
-
-class Job(Action):
-    # Model representing a job action
+class NestedJob(BaseModel):
+    # Model representing a neted job action
     type: Literal['job']
-    config: Config
     multiple_pages: Optional[bool] = False
     next_page_button_xpath: Optional[str] = None
     urls: List[str]
-    actions: List[Action]
-    nested: bool = False
-
-class NestedJob(Job):
-    # Model representing a nested job action
     nested: bool = True
 
-class Scrape(Action):
+
+
+class Scrape(BaseModel):
     # Model representing a scrape action
     type: Literal['scrape']
     label: str
     xpath: str
 
 
-class Click(Action):
+class Click(BaseModel):
     # Model representing a click action
     type: Literal['click']
     xpath: str
+    page: Optional[int]
+
+
+
+class Job(BaseModel):
+    type: Literal['job']
+    config: Config
+    multiple_pages: Optional[bool] = False
+    next_page_button_xpath: Optional[str] = None
+    urls: Union[List[str], str]
+    nested: bool = False
+    actions: List[Union[Scrape,Click,NestedJob]]
 
 
 class Request(BaseModel):
@@ -52,3 +54,4 @@ with open('schemas/request.json', 'r') as file:
     payload_data = json.load(file)
 
 request = Request(**payload_data)
+print(request)

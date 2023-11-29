@@ -10,6 +10,8 @@ current_dir = Path(__file__).resolve().parent
 parent_dir = current_dir.parent
 sys.path.insert(0, str(parent_dir))
 
+from app.scraper.scraping_job import ScrapingJob
+
 app = FastAPI()
 
 
@@ -20,9 +22,17 @@ async def scrape(request_data: Request):
         # You can access the data using request_data.payload, e.g., request_data.payload.config
 
         # Replace the following print statement with your actual scraping logic
-        print("Scraping logic here:", request_data)
+        job_data = request_data.payload
+        #print(job_data)
+        scraping_job_instance = ScrapingJob(job_data)
+        await scraping_job_instance.gather_tasks()
+        return scraping_job_instance.scraped_data
+        #await scraping_job_instance.gather_tasks()
 
-        return {"message": "Scraping completed successfully"}
+        #return {"message": "Scraping completed successfully"}
+
+        #return {"message": "Scraping completed successfully"}
     except Exception as e:
+        print(f"Error: {str(e)}")
         # Handle exceptions and return an appropriate HTTP response
         raise HTTPException(status_code=500, detail=str(e))
