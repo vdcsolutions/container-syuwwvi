@@ -3,3 +3,7 @@ token
 venv
 __pycache__
 .idea
+jastrze.json
+output.json
+schemas/znanylekarzdetails.json
+schemas/znanylekarz.json
