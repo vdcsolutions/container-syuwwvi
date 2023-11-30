@@ -6,7 +6,7 @@ from selenium.webdriver.common.by import By
 import asyncio
 from selenium.common.exceptions import NoSuchElementException
 import json
-
+import csv
 
 
 class ScrapingJob:
@@ -38,7 +38,7 @@ class ScrapingJob:
         """
 
 
-        semaphore = asyncio.Semaphore(5)
+        semaphore = asyncio.Semaphore(15)
 
         async def limited_task(url):
             async with semaphore:
@@ -66,8 +66,11 @@ class ScrapingJob:
                 await nested_job.gather_tasks()
             elif action.type == 'click':
                 try:
-                    element = driver.find_element(By.XPATH, action.xpath)
-                    element.click()
+                    elements = driver.find_elements(By.XPATH, action.xpath)
+                    for element in elements:
+                        element.click()
+                        await asyncio.sleep(self.config.waitTime)
+
                 except:
                     pass
             elif action.type == 'scrape':
@@ -89,7 +92,7 @@ class ScrapingJob:
             options.add_argument("--disable-gpu")
         driver = webdriver.Chrome(options=options)
         driver.get(url)
-        self.scraped_data.append({'url': url, 'title': driver.title, 'data': []})
+        self.scraped_data.append({'url': url, 'title': driver.title})
         await asyncio.sleep(self.config.waitTime)
 
         try:
@@ -111,6 +114,20 @@ class ScrapingJob:
                 await self.perform_actions(driver, url)
 
         finally:
+            with open(f'output.json', 'w', encoding='utf-8') as json_file:
+                json.dump(self.scraped_data, json_file, indent=2, ensure_ascii=False)
+            all_keys = set().union(*(d.keys() for d in self.scraped_data))
+
+            # Writing to CSV
+            with open('output.csv', 'w', newline='') as csvfile:
+                # Create a CSV writer with the unique set of fieldnames
+                writer = csv.DictWriter(csvfile, fieldnames=all_keys)
+
+                # Write header
+                writer.writeheader()
+
+                # Write data
+                writer.writerows(self.scraped_data)
             driver.quit()
 
     async def scrape(self, driver, url: str, xpath: str, label: str):
@@ -127,22 +144,25 @@ class ScrapingJob:
         - None
         """
         elements = driver.find_elements(By.XPATH, xpath)
-        data = []
+        data = {}
+        row = {}
+        i = 0
         for element in elements:
+            i += 1
             try:
                 href_value = element.get_attribute("href")
                 if href_value:
-                    data.append({label: element.text, 'href': href_value})
-                elif element.text:
-                    data.append({label: element.text})
-
+                    data[label+'_href_'+str(i)] = href_value
+                    #data.append({label+str(i): element.text, 'href': href_value})
+                else:
+                    data[label+'_'+str(i)] = element.get_attribute("innerText").strip()
+                    #data.append({label+(str(i)): element.text})
             except:
-                data.append({label: element.text})
                 pass
         # Find the entry in self.scraped_data with the corresponding URL and update its 'data' field
         for entry in self.scraped_data:
-            if entry['url'] == url:
-                print(entry)
-                entry['data'].extend(data)
+            if entry['url'] == url and len(data)>0:
+                entry.update(data)
+                print(data)
                 break
 

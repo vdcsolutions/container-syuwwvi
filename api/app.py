@@ -3,7 +3,7 @@ from pathlib import Path
 from schemas.request_schema import Request, payload_data
 from fastapi import FastAPI, HTTPException
 import json
-
+import csv
 # Get the current script's directory
 current_dir = Path(__file__).resolve().parent
 
@@ -30,7 +30,22 @@ async def scrape(request_data: Request):
         from datetime import datetime
         current_timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
         with open(f'output_data/{current_timestamp}.json', 'w', encoding='utf-8') as json_file:
-                json.dump(scraping_job_instance.scraped_data, json_file, indent=2)
+                json.dump(scraping_job_instance.scraped_data, json_file, indent=2, ensure_ascii=False)
+
+        all_keys = set().union(*(d.keys() for d in self.scraped_data))
+
+        with open(f'output_data/{current_timestamp}.csv', 'w', newline='') as csvfile:
+            # Extract column names from the first dictionary
+            fieldnames = scraping_job_instance.scraped_data[0].keys()
+
+            # Create a CSV writer with the specified fieldnames
+            writer = csv.DictWriter(csvfile, fieldnames=all_keys)
+
+            # Write header
+            writer.writeheader()
+
+            # Write data
+            writer.writerows(scraping_job_instance.scraped_data)
         return scraping_job_instance.scraped_data
         #await scraping_job_instance.gather_tasks()
 
