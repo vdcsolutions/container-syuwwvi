@@ -8,3 +8,4 @@ output.json
 schemas/znanylekarzdetails.json
 schemas/znanylekarz.json
 output_data
+output.csv
