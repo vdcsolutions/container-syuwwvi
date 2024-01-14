@@ -1,0 +1,24 @@
+{"payload": {
+    "config": {
+        "headless": true,
+        "proxy": "filename",
+        "waitTime": 5000,
+        "browser": "your_browser_here"
+    },
+    "type": "job",
+    "urls": ["https://example.com"],
+    "multiple_pages": true,
+    "next_page_button_xpath": "xpath to it",
+    "actions": [
+        {
+            "type": "scrape",
+            "xpath": "xpath to it",
+            "label": "page urls"
+        },
+        {
+            "type": "click",
+            "xpath": "xpath to it"}
+            ]
+        }
+
+}
