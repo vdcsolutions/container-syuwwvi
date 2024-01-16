@@ -37,8 +37,9 @@ class Click(BaseModel):
 class Action(BaseModel):
     type: str
     xpath: str = ""
-    label: str = ""
-    page: int = 0
+    label: Optional[str]
+    page: Optional[int]
+    key: Optional[int]
 
 
 class Job(BaseModel):
@@ -55,8 +56,8 @@ class Request(BaseModel):
     # Model representing the overall request payload
     payload: Job
 
-with open('schemas/znanylekarzdetails.json', 'r') as file:
-    payload_data = json.load(file)
+#with open('schemas/znanylekarzdetails.json', 'r') as file:
+#    payload_data = json.load(file)
 
-request = Request(**payload_data)
-print(request)
+#request = Request(**payload_data)
+#print(request)
