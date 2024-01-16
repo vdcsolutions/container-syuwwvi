@@ -1,0 +1,45 @@
+﻿{"payload": {
+    "config": {
+        "headless": true,
+        "proxy": "filename",
+        "waitTime": 1,
+        "browser": "your_browser_here"
+    },
+    "type": "job",
+    "urls": ["https://www.znanylekarz.pl/magdalena-franiel/stomatolog/zory#address-id=%5B273354%5D&filters%5Bspecializations%5D%5B%5D=103",
+"https://www.znanylekarz.pl/barbara-sleziona/stomatolog/zory#address-id=%5B443028%5D&filters%5Bspecializations%5D%5B%5D=103"],
+    "multiple_pages": false,
+    "actions": [
+        {
+            "type": "click",
+            "xpath": "//button[@id='onetrust-accept-btn-handler']",
+            "page": 1},
+        {
+            "type": "scrape",
+            "xpath": "//div[@data-id='profile-fullname-wrapper']",
+            "label": "name"
+        },
+        {
+            "type": "scrape",
+            "label": "contact",
+            "xpath": "//section[@id='contact-section']"
+        },
+        {
+            "type": "click",
+            "xpath": "//div[@data-id='multiple-addresses-nav']//a"},
+        {
+            "type": "scrape",
+            "label": "address",
+            "xpath": "//span[@itemprop='streetAddress']"
+        },
+        {   "type": "click",
+            "xpath": "//a[@data-nav-id='profile-pricing']"},
+        {"type":  "click", "xpath": "//p[@itemprop='availableService']"},
+        {
+            "type": "scrape",
+            "label": "pricing",
+            "xpath": "//div[@id='profile-pricing']"
+        }
+    ]
+        }
+}

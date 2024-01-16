@@ -3,6 +3,7 @@
 </script>
 
 <main>
-  <h1>Your Main Application Content</h1>
+  <center>
   <Form />
+  </center>
 </main>

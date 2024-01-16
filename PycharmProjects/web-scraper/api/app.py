@@ -1,9 +1,9 @@
 import sys
 from pathlib import Path
-from schemas.request_schema import Request, payload_data
+from schemas.request_schema import Request
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 import json
-import csv
 # Get the current script's directory
 current_dir = Path(__file__).resolve().parent
 
@@ -15,6 +15,15 @@ from app.scraper.scraping_job import ScrapingJob
 
 app = FastAPI()
 
+origins = ["http://localhost:8080"]  # Update with your frontend URL
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],  # Update with the HTTP methods your app uses
+    allow_headers=["*"],  # Update with the HTTP headers your app uses
+)
 
 @app.post("/scrape")
 async def scrape(request_data: Request):
@@ -24,35 +33,15 @@ async def scrape(request_data: Request):
 
         # Replace the following print statement with your actual scraping logic
         job_data = request_data.payload
-        #print(job_data)
+        print(job_data)
         scraping_job_instance = ScrapingJob(job_data)
         await scraping_job_instance.gather_tasks()
-        from datetime import datetime
-        current_timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
-        with open(f'output_data/{current_timestamp}.json', 'w', encoding='utf-8') as json_file:
-                json.dump(scraping_job_instance.scraped_data, json_file, indent=2, ensure_ascii=False)
+        print(scraping_job_instance.scraped_data)
+        return json.dumps(scraping_job_instance.scraped_data)
 
-        all_keys = set().union(*(d.keys() for d in self.scraped_data))
 
-        with open(f'output_data/{current_timestamp}.csv', 'w', newline='') as csvfile:
-            # Extract column names from the first dictionary
-            fieldnames = scraping_job_instance.scraped_data[0].keys()
-
-            # Create a CSV writer with the specified fieldnames
-            writer = csv.DictWriter(csvfile, fieldnames=all_keys)
-
-            # Write header
-            writer.writeheader()
-
-            # Write data
-            writer.writerows(scraping_job_instance.scraped_data)
-        return scraping_job_instance.scraped_data
-        #await scraping_job_instance.gather_tasks()
-
-        #return {"message": "Scraping completed successfully"}
-
-        #return {"message": "Scraping completed successfully"}
     except Exception as e:
+        print(request_data)
         print(f"Error: {str(e)}")
         # Handle exceptions and return an appropriate HTTP response
         raise HTTPException(status_code=500, detail=str(e))
